@@ -1,16 +1,18 @@
 class Account {
   constructor(username) {
     this.username = username;
-    this._balance;
     this.transactions = [];
   }
 
   get balance() {
     this._balance = 0;
-    for (const transaction of this.transactions) {
-      this._balance += transaction;
+    if (this.transactions.length < 2) {
+      return this.transactions[0];
+    } else {
+      for (const transaction of this.transactions) {
+        this._balance += transaction;
+      }
     }
-
     return this._balance;
   }
 
@@ -27,8 +29,11 @@ class Transaction {
 
   commit() {
     this.time = new Date();
-    this.account.addTransaction(this.value);
-    return true;
+    if (this.isAllowed()) {
+      return this.account.addTransaction(this.value);
+    } else {
+      return console.log("\nInsufficient funds\n");
+    }
   }
 }
 
@@ -36,11 +41,19 @@ class Withdrawal extends Transaction {
   get value() {
     return 0 - this.amount;
   }
+
+  isAllowed() {
+    return this.account.balance - this.value >= 0 ? true : false;
+  }
 }
 
 class Deposit extends Transaction {
   get value() {
     return this.amount;
+  }
+
+  isAllowed() {
+    return true;
   }
 }
 
@@ -49,7 +62,7 @@ class Deposit extends Transaction {
 
 const myAccount = new Account("snow-patrol");
 
-t1 = new Withdrawal(50.25, myAccount);
+t1 = new Deposit(50.25, myAccount);
 t1.commit();
 console.log("Transaction 1:", t1);
 
